@@ -1,7 +1,8 @@
 import axios from 'axios'
 
 export const fetchMovies = (query, page) => (dispatch) => {
-    console.log(page)
+    // console.log('masuk')
+    // console.log(page)
     if (query && page) {
         axios({
             method: 'GET',

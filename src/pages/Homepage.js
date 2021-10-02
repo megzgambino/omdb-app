@@ -3,14 +3,13 @@ import Movies from '../components/Movies'
 import { fetchMovies, cleanUp } from '../redux/actions/movieActions'
 import { useDispatch, useSelector } from 'react-redux'
 import { useHistory } from 'react-router'
-import InfiniteScroll from 'react-infinite-scroll-component'
 
 export default function Homepage() {
     const movies = useSelector((state) => state.movies)
     const dispatch = useDispatch()
     const history = useHistory()
     const [movieSearch, setMovieSearch] = useState('')
-    const [page, setPage] = useState()
+    const [page, setPage] = useState(1)
 
     useEffect(() => {
         dispatch(fetchMovies())
@@ -27,18 +26,24 @@ export default function Homepage() {
         const params = new URLSearchParams()
         if (movieSearch) {
             params.append('title', movieSearch)
+            params.append('page', page)
         } else {
             params.delete('title')
+            params.delete('page')
         }
         history.push({ search: params.toString() })
-    }, [movieSearch, history])
+    }, [movieSearch, page, history])
 
     function onChangeHandler(movie) {
         setMovieSearch(movie.target.value)
     }
 
     function onClickHandler() {
-        setPage(1)
+        dispatch(fetchMovies(movieSearch, page))
+    }
+
+    function nextClickHandler() {
+        setPage(page + 1)
         dispatch(fetchMovies(movieSearch, page))
     }
 
@@ -77,18 +82,20 @@ export default function Homepage() {
                         </form>
                     </div>
                 </div>
-
-                <InfiniteScroll
-                    dataLength={movies.length}
-                    next={() => setPage(page+1)}
-                    hasMore={true}
-                >
-                    <div className="row g-2">
-                        {movies.map((movie) => {
-                            return <Movies movie={movie} key={movie.imdbID} />
-                        })}
-                    </div>
-                </InfiniteScroll>
+                <div className="row g-2">
+                    {movies.map((movie) => {
+                        return <Movies movie={movie} key={movie.imdbID} />
+                    })}
+                    {movies.length ? (
+                        <button
+                            onClick={nextClickHandler}
+                            className="btn btn-lg btn-success"
+                            type="button"
+                        >
+                            Next
+                        </button>
+                    ) : null}
+                </div>
             </div>
         </>
     )
